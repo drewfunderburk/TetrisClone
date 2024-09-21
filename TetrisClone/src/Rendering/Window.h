@@ -11,12 +11,12 @@ public:
 
 	int getWidth() const { return m_width; }
 	int getHeight() const { return m_height; }
+	void setWindowSize(int width, int height);
 	const char* getTitle() const { return m_title; }
 	bool windowShouldClose();
 
 private:
 	bool init(const char* title, int width, int height);
-
 
 private:
 		GLFWwindow* m_window;

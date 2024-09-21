@@ -1,6 +1,12 @@
 #include "Window.h"
+
+// Define GLEW_STATIC to use the static version of GLEW
+#define GLEW_STATIC
+#include "GL/glew.h"
 #include "GLFW/glfw3.h"
+
 #include <stdexcept>
+#include <iostream>
 
 Window::Window(const char* title, int width, int height)
 {
@@ -54,6 +60,28 @@ bool Window::init(const char* title, int width, int height)
 
 	// Make the window's context current
 	glfwMakeContextCurrent(m_window);
+
+	// Initialize GLEW
+	if (glewInit() != GLEW_OK)
+	{
+		glfwTerminate();
+		return false;
+	}
+
+	// Create GL buffer for triangle
+	float positions[] =
+	{
+		-0.5f, -0.5f,
+		 0.0f,  0.5f,
+		 0.5f, -0.5f
+	};
+	unsigned int buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
     return true;
 }
 
@@ -65,11 +93,20 @@ void Window::update()
 		// Clear the buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		// Swap the buffers
 		glfwSwapBuffers(m_window);
 		// Poll for events
 		glfwPollEvents();
 	}
+}
+
+void Window::setWindowSize(int width, int height)
+{
+	m_width = width;
+	m_height = height;
+	glfwSetWindowSize(m_window, width, height);
 }
 
 bool Window::windowShouldClose()
