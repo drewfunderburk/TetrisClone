@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "Shader.h"
 
 // Define GLEW_STATIC to use the static version of GLEW
 #define GLEW_STATIC
@@ -81,6 +82,12 @@ bool Window::init(const char* title, int width, int height)
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+	// Create GL shader
+
+
+	unsigned int shader = Shader::LoadShader("src/Rendering/Basic.shader");
+	glUseProgram(shader);
 
     return true;
 }
