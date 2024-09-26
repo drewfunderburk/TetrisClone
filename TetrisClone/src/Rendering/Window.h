@@ -15,7 +15,7 @@ public:
 	const char* getTitle() const { return m_title; }
 	bool windowShouldClose();
 
-	static void GLFWErrorCallback(int error, const char* description);
+	static void GLFWDebugMessageCallback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, const void* userParam);
 
 private:
 	bool init(const char* title, int width, int height);
