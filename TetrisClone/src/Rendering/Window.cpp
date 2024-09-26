@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <iostream>
 
+
+
 Window::Window(const char* title, int width, int height)
 {
     m_title = title;
@@ -49,6 +51,14 @@ bool Window::init(const char* title, int width, int height)
 	if (!glfwInit())
 		return false;
 
+	// Print GLFW Version
+	int major, minor, revision;
+	glfwGetVersion(&major, &minor, &revision);
+	std::cout << "GLFW Version: " << major << "." << minor << "." << revision << std::endl;
+
+	// Set GLFW error callback
+	glfwSetErrorCallback(GLFWErrorCallback);
+
 	// Create window
 	m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
@@ -68,6 +78,12 @@ bool Window::init(const char* title, int width, int height)
 		glfwTerminate();
 		return false;
 	}
+
+	// Print GLEW Version
+	std::cout << "GLEW Version: " << glewGetString(GLEW_VERSION) << std::endl;
+
+	// Print OpenGL Version
+	std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
 	// Create GL buffer for triangle
 	float positions[] =
@@ -131,4 +147,9 @@ void Window::setWindowSize(int width, int height)
 bool Window::windowShouldClose()
 {
 	return glfwWindowShouldClose(m_window);
+}
+
+void Window::GLFWErrorCallback(int error, const char* description)
+{
+	std::cerr << "GLFW Error: " << description << std::endl;
 }
