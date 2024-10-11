@@ -5,8 +5,8 @@
 #include "GLFW/glfw3.h"
 #include <stdexcept>
 #include <iostream>
-#include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 Window::Window(const char* title, int width, int height)
 {
@@ -42,11 +42,14 @@ Window::~Window()
 	m_title = nullptr;
 
 	m_vertexBuffer->unbind();
-	delete m_vertexBuffer;
-	m_vertexBuffer = nullptr;
 	m_indexBuffer->unbind();
+	m_vertexArray->unbind();
+	delete m_vertexBuffer;
 	delete m_indexBuffer;
+	delete m_vertexArray;
+	m_vertexBuffer = nullptr;
 	m_indexBuffer = nullptr;
+	m_vertexArray = nullptr;
 }
 
 bool Window::init(const char* title, int width, int height)
@@ -115,8 +118,13 @@ bool Window::init(const char* title, int width, int height)
 	glGenVertexArrays(1, &m_vertexArrayObject);
 	glBindVertexArray(m_vertexArrayObject);
 
-	// Create vertex buffer object
+	m_vertexArray = new VertexArray();
 	m_vertexBuffer = new VertexBuffer(positions, 4 * 2 * sizeof(float));
+	VertexBufferLayout layout;
+	layout.push<float>(2);
+	m_vertexArray->addBuffer(*m_vertexBuffer, layout);
+
+	// Create vertex buffer object
 
 	// Enable vertex attributes
 	glEnableVertexAttribArray(0);
@@ -150,7 +158,7 @@ void Window::update()
 		glUseProgram(m_shader);
 		glUniform4f(glGetUniformLocation(m_shader, "u_Color"), 0.2f, 0.3f, 0.8f, 1.0f);
 
-		glBindVertexArray(m_vertexArrayObject);
+		m_vertexArray->bind();
 		m_indexBuffer->bind();
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

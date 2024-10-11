@@ -2,6 +2,8 @@
 class GLFWwindow;
 class VertexBuffer;
 class IndexBuffer;
+class VertexArray;
+
 class Window
 {
 
@@ -31,5 +33,5 @@ private:
 		unsigned int m_vertexArrayObject;
 		VertexBuffer* m_vertexBuffer;
 		IndexBuffer* m_indexBuffer;
-
+		VertexArray* m_vertexArray;
 };
