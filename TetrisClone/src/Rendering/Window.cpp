@@ -1,14 +1,12 @@
 #include "Window.h"
 #include "Shader.h"
 
-// Define GLEW_STATIC to use the static version of GLEW
-#define GLEW_STATIC
-#define GLEW_DEBUG
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-
 #include <stdexcept>
 #include <iostream>
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 Window::Window(const char* title, int width, int height)
 {
@@ -42,6 +40,13 @@ Window::~Window()
 	m_width = 0;
 	m_height = 0;
 	m_title = nullptr;
+
+	m_vertexBuffer->unbind();
+	delete m_vertexBuffer;
+	m_vertexBuffer = nullptr;
+	m_indexBuffer->unbind();
+	delete m_indexBuffer;
+	m_indexBuffer = nullptr;
 }
 
 bool Window::init(const char* title, int width, int height)
@@ -111,18 +116,14 @@ bool Window::init(const char* title, int width, int height)
 	glBindVertexArray(m_vertexArrayObject);
 
 	// Create vertex buffer object
-	glGenBuffers(1, &m_vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+	m_vertexBuffer = new VertexBuffer(positions, 4 * 2 * sizeof(float));
 
 	// Enable vertex attributes
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
 	// Create index buffer object
-	glGenBuffers(1, &m_indexBufferObject);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	m_indexBuffer = new IndexBuffer(indices, 6);
 
 	// Create shader
 	m_shader = Shader::LoadShader("src/Rendering/Basic.shader");
@@ -150,7 +151,7 @@ void Window::update()
 		glUniform4f(glGetUniformLocation(m_shader, "u_Color"), 0.2f, 0.3f, 0.8f, 1.0f);
 
 		glBindVertexArray(m_vertexArrayObject);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObject);
+		m_indexBuffer->bind();
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
