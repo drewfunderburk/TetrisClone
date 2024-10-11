@@ -10,8 +10,6 @@
 #include <stdexcept>
 #include <iostream>
 
-
-
 Window::Window(const char* title, int width, int height)
 {
     m_title = title;
@@ -52,6 +50,11 @@ bool Window::init(const char* title, int width, int height)
 	if (!glfwInit())
 		return false;
 
+	// Set core profile
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	// Print GLFW Version
 	int major, minor, revision;
 	glfwGetVersion(&major, &minor, &revision);
@@ -80,7 +83,7 @@ bool Window::init(const char* title, int width, int height)
 	// Set GLFW debug message callback
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(GLFWDebugMessageCallback, 0);
+	glfwSetErrorCallback(GLFWErrorMessageCallback);
 
 	// Print GLEW Version
 	std::cout << "GLEW Version: " << glewGetString(GLEW_VERSION) << std::endl;
@@ -103,22 +106,34 @@ bool Window::init(const char* title, int width, int height)
 		2, 3, 0
 	};
 
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+	// Create vertex array object
+	glGenVertexArrays(1, &m_vertexArrayObject);
+	glBindVertexArray(m_vertexArrayObject);
 
+	// Create vertex buffer object
+	glGenBuffers(1, &m_vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+
+	// Enable vertex attributes
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-	unsigned int ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	// Create index buffer object
+	glGenBuffers(1, &m_indexBufferObject);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
-	// Create GL Shader
-	unsigned int shader = Shader::LoadShader("src/Rendering/Basic.shader");
-	glUseProgram(shader);
+	// Create shader
+	m_shader = Shader::LoadShader("src/Rendering/Basic.shader");
+	glUseProgram(m_shader);
+
+
+	// Unbind the buffer
+	glBindVertexArray(0);
+	glUseProgram(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     return true;
 }
@@ -130,6 +145,12 @@ void Window::update()
 	{
 		// Clear the buffer
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(m_shader);
+		glUniform4f(glGetUniformLocation(m_shader, "u_Color"), 0.2f, 0.3f, 0.8f, 1.0f);
+
+		glBindVertexArray(m_vertexArrayObject);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObject);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
@@ -152,98 +173,7 @@ bool Window::windowShouldClose()
 	return glfwWindowShouldClose(m_window);
 }
 
-void Window::GLFWDebugMessageCallback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, const void* userParam)
+void Window::GLFWErrorMessageCallback(int error, const char* description)
 {
-	const char* _source;
-	const char* _type;
-	const char* _severity;
-
-	switch (source) {
-	case GL_DEBUG_SOURCE_API:
-		_source = "API";
-		break;
-
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-		_source = "WINDOW SYSTEM";
-		break;
-
-	case GL_DEBUG_SOURCE_SHADER_COMPILER:
-		_source = "SHADER COMPILER";
-		break;
-
-	case GL_DEBUG_SOURCE_THIRD_PARTY:
-		_source = "THIRD PARTY";
-		break;
-
-	case GL_DEBUG_SOURCE_APPLICATION:
-		_source = "APPLICATION";
-		break;
-
-	case GL_DEBUG_SOURCE_OTHER:
-		_source = "UNKNOWN";
-		break;
-
-	default:
-		_source = "UNKNOWN";
-		break;
-	}
-
-	switch (type) {
-	case GL_DEBUG_TYPE_ERROR:
-		_type = "ERROR";
-		break;
-
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-		_type = "DEPRECATED BEHAVIOR";
-		break;
-
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-		_type = "UDEFINED BEHAVIOR";
-		break;
-
-	case GL_DEBUG_TYPE_PORTABILITY:
-		_type = "PORTABILITY";
-		break;
-
-	case GL_DEBUG_TYPE_PERFORMANCE:
-		_type = "PERFORMANCE";
-		break;
-
-	case GL_DEBUG_TYPE_OTHER:
-		_type = "OTHER";
-		break;
-
-	case GL_DEBUG_TYPE_MARKER:
-		_type = "MARKER";
-		break;
-
-	default:
-		_type = "UNKNOWN";
-		break;
-	}
-
-	switch (severity) {
-	case GL_DEBUG_SEVERITY_HIGH:
-		_severity = "HIGH";
-		break;
-
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		_severity = "MEDIUM";
-		break;
-
-	case GL_DEBUG_SEVERITY_LOW:
-		_severity = "LOW";
-		break;
-
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		_severity = "NOTIFICATION";
-		break;
-
-	default:
-		_severity = "UNKNOWN";
-		break;
-	}
-
-	printf("%d: %s of %s severity, raised from %s: %s\n",
-		id, _type, _severity, _source, message);
+	std::cerr << "GLFW Error: " << description << std::endl;
 }

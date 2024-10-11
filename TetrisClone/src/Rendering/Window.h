@@ -15,7 +15,7 @@ public:
 	const char* getTitle() const { return m_title; }
 	bool windowShouldClose();
 
-	static void GLFWDebugMessageCallback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, const void* userParam);
+	static void GLFWErrorMessageCallback(int error, const char* description);
 
 private:
 	bool init(const char* title, int width, int height);
@@ -25,4 +25,9 @@ private:
 		int m_width;
 		int m_height;
 		const char* m_title;
+		unsigned int m_shader;
+		unsigned int m_vertexArrayObject;
+		unsigned int m_vertexBufferObject;
+		unsigned int m_indexBufferObject;
+
 };
