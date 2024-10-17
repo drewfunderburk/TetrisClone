@@ -6,6 +6,27 @@
 #include <string>
 #include <sstream>
 
+Shader::Shader(const char* filePath)
+	: m_filePath(filePath)
+{
+}
+
+Shader::~Shader()
+{
+}
+
+void Shader::Bind() const
+{
+}
+
+void Shader::Unbind() const
+{
+}
+
+void Shader::SetUniform4f(const char* name, float v0, float v1, float v2, float v3)
+{
+}
+
 unsigned int Shader::LoadShader(const char* filePath)
 {
 	enum class ShaderType
@@ -75,4 +96,9 @@ unsigned int Shader::CompileShader(unsigned int type, const char* source)
 	}
 
 	return id;
+}
+
+unsigned int Shader::GetUniformLocation(const char* name)
+{
+	return 0;
 }
