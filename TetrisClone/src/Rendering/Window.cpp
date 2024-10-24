@@ -115,16 +115,11 @@ bool Window::init(const char* title, int width, int height)
 	};
 
 	// Create vertex array object
-	glGenVertexArrays(1, &m_vertexArrayObject);
-	glBindVertexArray(m_vertexArrayObject);
-
 	m_vertexArray = new VertexArray();
 	m_vertexBuffer = new VertexBuffer(positions, 4 * 2 * sizeof(float));
 	VertexBufferLayout layout;
 	layout.push<float>(2);
 	m_vertexArray->addBuffer(*m_vertexBuffer, layout);
-
-	// Create vertex buffer object
 
 	// Enable vertex attributes
 	glEnableVertexAttribArray(0);
@@ -139,7 +134,7 @@ bool Window::init(const char* title, int width, int height)
 
 
 	// Unbind the buffer
-	glBindVertexArray(0);
+	m_vertexArray->unbind();
 	glUseProgram(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
