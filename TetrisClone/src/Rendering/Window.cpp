@@ -7,6 +7,7 @@
 #include <iostream>
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+#include "Shader.h"
 
 Window::Window(const char* title, int width, int height)
 {
@@ -44,12 +45,15 @@ Window::~Window()
 	m_vertexBuffer->unbind();
 	m_indexBuffer->unbind();
 	m_vertexArray->unbind();
+	m_shader->Unbind();
 	delete m_vertexBuffer;
 	delete m_indexBuffer;
 	delete m_vertexArray;
+	delete m_shader;
 	m_vertexBuffer = nullptr;
 	m_indexBuffer = nullptr;
 	m_vertexArray = nullptr;
+	m_shader = nullptr;
 }
 
 bool Window::init(const char* title, int width, int height)
@@ -129,15 +133,14 @@ bool Window::init(const char* title, int width, int height)
 	m_indexBuffer = new IndexBuffer(indices, 6);
 
 	// Create shader
-	m_shader = Shader::LoadShader("src/Rendering/Basic.shader");
-	glUseProgram(m_shader);
-
+	m_shader = new Shader("res/shaders/Basic.shader");
+	m_shader->Bind();
 
 	// Unbind the buffer
 	m_vertexArray->unbind();
-	glUseProgram(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	m_shader->Unbind();
+	m_vertexBuffer->unbind();
+	m_indexBuffer->unbind();
 
     return true;
 }
@@ -150,9 +153,7 @@ void Window::update()
 		// Clear the buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(m_shader);
-		glUniform4f(glGetUniformLocation(m_shader, "u_Color"), 0.2f, 0.3f, 0.8f, 1.0f);
-
+		m_shader->Bind();
 		m_vertexArray->bind();
 		m_indexBuffer->bind();
 

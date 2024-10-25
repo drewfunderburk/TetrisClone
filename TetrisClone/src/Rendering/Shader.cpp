@@ -7,24 +7,30 @@
 #include <sstream>
 
 Shader::Shader(const char* filePath)
-	: m_filePath(filePath)
+	: m_filePath(filePath), m_rendererID(0)
 {
+	m_rendererID = LoadShader(filePath);
 }
 
 Shader::~Shader()
 {
+	glDeleteProgram(m_rendererID);
 }
 
 void Shader::Bind() const
 {
+	glUseProgram(m_rendererID);
+
 }
 
 void Shader::Unbind() const
 {
+	glUseProgram(0);
 }
 
 void Shader::SetUniform4f(const char* name, float v0, float v1, float v2, float v3)
 {
+	glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
 }
 
 unsigned int Shader::LoadShader(const char* filePath)
@@ -100,5 +106,8 @@ unsigned int Shader::CompileShader(unsigned int type, const char* source)
 
 unsigned int Shader::GetUniformLocation(const char* name)
 {
-	return 0;
+	int location = glGetUniformLocation(m_rendererID, name);
+	if (location == -1)
+		std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+	return location;
 }

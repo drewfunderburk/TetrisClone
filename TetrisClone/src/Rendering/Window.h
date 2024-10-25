@@ -3,6 +3,7 @@ class GLFWwindow;
 class VertexBuffer;
 class IndexBuffer;
 class VertexArray;
+class Shader;
 
 class Window
 {
@@ -29,7 +30,7 @@ private:
 		int m_width;
 		int m_height;
 		const char* m_title;
-		unsigned int m_shader;
+		Shader* m_shader;
 		unsigned int m_vertexArrayObject;
 		VertexBuffer* m_vertexBuffer;
 		IndexBuffer* m_indexBuffer;
